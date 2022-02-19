@@ -1268,7 +1268,7 @@ bool PlanningScene::setPlanningSceneDiffMsg(const moveit_msgs::PlanningScene& sc
     setCurrentState(scene_msg.robot_state);
 
   // if at least some links are mentioned in the allowed collision matrix, then we have an update
-  if (!scene_msg.allowed_collision_matrix.entry_names.empty())
+  if (!scene_msg.allowed_collision_matrix.entry_names.empty() || !scene_msg.allowed_collision_matrix.default_entry_names.empty())
     acm_ = std::make_shared<collision_detection::AllowedCollisionMatrix>(scene_msg.allowed_collision_matrix);
 
   if (!scene_msg.link_padding.empty() || !scene_msg.link_scale.empty())

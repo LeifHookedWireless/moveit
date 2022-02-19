@@ -73,8 +73,11 @@ AllowedCollisionMatrix::AllowedCollisionMatrix(const moveit_msgs::AllowedCollisi
                                            "in AllowedCollisionMatrix message");
     return;
   }
+  ROS_WARN_STREAM("AllowedCollisionMatrix\n" << msg); // xx!!
+  ROS_WARN_STREAM("(msg) default_entries: " << msg.default_entry_names.size());
   for (std::size_t i = 0; i < msg.default_entry_names.size(); ++i)
     setDefaultEntry(msg.default_entry_names[i], msg.default_entry_values[i]);
+  ROS_WARN_STREAM("default_entries: " << default_entries_.size());
 
   for (std::size_t i = 0; i < msg.entry_names.size(); ++i)
   {
@@ -92,10 +95,14 @@ AllowedCollisionMatrix::AllowedCollisionMatrix(const moveit_msgs::AllowedCollisi
         allowed_default = AllowedCollision::NEVER;
       allowed_entry = msg.entry_values[i].enabled[j] ? AllowedCollision::ALWAYS : AllowedCollision::NEVER;
 
-      if (allowed_entry != allowed_default)
-        setEntry(msg.entry_names[i], msg.entry_names[j], allowed_entry);
+      setEntry(msg.entry_names[i], msg.entry_names[j], allowed_entry);
     }
   }
+  ROS_WARN_STREAM("entries: " << entries_.size());
+  ROS_WARN_STREAM("default_entries: " << default_entries_.size());
+  std::stringstream acm_str;
+  print(acm_str);
+  ROS_WARN_STREAM("created ACM from msg:\n" << acm_str.str());
 }
 
 bool AllowedCollisionMatrix::getEntry(const std::string& name1, const std::string& name2, DecideContactFn& fn) const
@@ -339,11 +346,18 @@ void AllowedCollisionMatrix::clear()
 void AllowedCollisionMatrix::getAllEntryNames(std::vector<std::string>& names) const
 {
   names.clear();
-  for (const auto& entry : entries_)
+  for (const auto& entry : entries_) {
     if (!names.empty() && names.back() == entry.first)
       continue;
     else
       names.push_back(entry.first);
+  }
+
+  for (const auto& entry : default_entries_) {
+    if (std::find(names.begin(), names.end(), entry.first) == names.end()) {
+      names.push_back(entry.first);
+    }
+  }
 }
 
 void AllowedCollisionMatrix::getMessage(moveit_msgs::AllowedCollisionMatrix& msg) const
